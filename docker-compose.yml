@@ -1,0 +1,23 @@
+# Values come from your shell or from a ".env" file next to this file (see .env.example).
+services:
+  app:
+    build: .
+    init: true # proper PID 1: forwards SIGTERM and reaps zombies
+    ports:
+      # host:container. Windows can reserve ranges (e.g. 3945-4044) and refuse to bind them: change APP_PORT.
+      - "${APP_PORT:-8080}:4000"
+    environment:
+      NODE_ENV: production
+      PORT: "4000"
+      PUBLIC_PORT: "${APP_PORT:-8080}" # only used to print the right URL in the logs
+      JWT_SECRET: "${JWT_SECRET:-}"
+      JWT_EXPIRES_IN: "${JWT_EXPIRES_IN:-1h}"
+      COINGECKO_API_KEY: "${COINGECKO_API_KEY:-}"
+      # This is a demo build, so the role switcher stays on. Set to "false" for anything real.
+      ALLOW_DEMO_LOGIN: "${ALLOW_DEMO_LOGIN:-true}"
+    # Hardening: the app only needs to read its own files and listen on a port.
+    read_only: true
+    tmpfs: [/tmp]
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    restart: unless-stopped
